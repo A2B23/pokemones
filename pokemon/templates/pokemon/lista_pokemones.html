@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pokédex</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 32px;
+            background: #f2f5f9;
+            color: #202938;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d62828;
+        }
+
+        .pokemones {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 30px auto;
+        }
+
+        .tarjeta {
+            padding: 20px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px #00000018;
+        }
+
+        .tarjeta img {
+            display: block;
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+        }
+
+        .elemento {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #e8eef7;
+            border-radius: 20px;
+        }
+
+        .navegacion {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 24px auto;
+}
+
+.navegacion a {
+    display: inline-block;
+    padding: 11px 18px;
+    background: #d62828;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.navegacion a:hover {
+    background: #a91f1f;
+    transform: translateY(-2px);
+}
+    </style>
+</head>
+<body>
+    <h1>Pokédex</h1>
+<nav class="navegacion">
+    <a href="{% url 'pokemon:crear' %}">Agregar Pokémon</a>
+    <a href="{% url 'pokemon:entrenadores' %}">Ver entrenadores</a>
+    <a href="{% url 'pokemon:gimnasios' %}">Ver gimnasios</a>
+</nav>
+
+    <section class="pokemones">
+        {% for pokemon in pokemones %}
+            <article class="tarjeta">
+                {% if pokemon.imagen %}
+                    <img src="{{ pokemon.imagen }}" alt="{{ pokemon.nombre }}">
+                {% endif %}
+
+                <h2>{{ pokemon.nombre }}</h2>
+                <p><span class="elemento">{{ pokemon.elemento }}</span></p>
+                <p><strong>Peso:</strong> {{ pokemon.peso }} kg</p>
+                <p><strong>Habilidades:</strong> {{ pokemon.habilidades }}</p>
+                <p>{{ pokemon.descripcion }}</p>
+                <a href="{% url 'pokemon:editar' pokemon.pk %}">Editar</a>
+                <a href="{% url 'pokemon:eliminar' pokemon.pk %}">Eliminar</a>
+            </article>
+        {% empty %}
+            <p>Aún no hay Pokémon registrados.</p>
+        {% endfor %}
+    </section>
+</body>
+</html> 

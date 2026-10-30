@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gimnasios Pokémon</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px 18px;
+            background: #10131a;
+            color: #f2f4f8;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            width: min(1000px, 100%);
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin: 10px 0 30px;
+            color: #ffcb05;
+            text-align: center;
+        }
+
+        .gimnasios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .tarjeta {
+            padding: 22px;
+            background: #1a202b;
+            border: 1px solid #303949;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+        }
+
+        .tarjeta h2 {
+            margin-top: 0;
+            color: #4fc3f7;
+        }
+
+        .elemento {
+            display: inline-block;
+            padding: 7px 12px;
+            background: #293445;
+            border-radius: 20px;
+        }
+
+        .entrenadores {
+            color: #b7c2d0;
+        }
+
+        .volver {
+            display: inline-block;
+            margin-top: 26px;
+            padding: 10px 16px;
+            background: #ffcb05;
+            border-radius: 8px;
+            color: #202938;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .volver:hover {
+            background: #ffe066;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Gimnasios Pokémon</h1>
+
+        <div class="gimnasios">
+            {% for gimnasio in gimnasios %}
+                <section class="tarjeta">
+                    <h2>Gimnasio de {{ gimnasio.elemento }}</h2>
+
+                    <p>
+                        <strong>Elemento:</strong>
+                        <span class="elemento">{{ gimnasio.elemento }}</span>
+                    </p>
+
+                    <p>
+                        <strong>Líder:</strong>
+                        {% if gimnasio.lider %}
+                            {{ gimnasio.lider.nombre }} {{ gimnasio.lider.apellido }}
+                        {% else %}
+                            Sin líder asignado
+                        {% endif %}
+                    </p>
+
+                    <h3>Entrenadores con esta medalla</h3>
+                    <ul>
+                        {% for entrenador in gimnasio.entrenadores_ganadores.all %}
+                            <li class="entrenadores">
+                                {{ entrenador.nombre }} {{ entrenador.apellido }}
+                            </li>
+                        {% empty %}
+                            <li class="entrenadores">Ninguno todavía</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% empty %}
+                <p>Aún no hay gimnasios registrados.</p>
+            {% endfor %}
+        </div>
+
+        <a class="volver" href="{% url 'pokemon:lista' %}">← Volver a la Pokédex</a>
+    </main>
+</body>
+</html>

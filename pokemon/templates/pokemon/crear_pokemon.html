@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Agregar Pokémon</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px 16px;
+            background: #10131a;
+            color: #f2f4f8;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            width: min(650px, 100%);
+            margin: 30px auto;
+        }
+
+        h1 {
+            margin-bottom: 24px;
+            color: #ffcb05;
+            text-align: center;
+        }
+
+        form {
+            padding: 28px;
+            background: #1a202b;
+            border: 1px solid #303949;
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgb(0 0 0 / 25%);
+        }
+
+        form p {
+            margin: 0 0 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #cbd5e1;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #3b4658;
+            border-radius: 8px;
+            background: #111722;
+            color: #f2f4f8;
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: 2px solid #4fc3f7;
+            border-color: transparent;
+        }
+
+        select[multiple] {
+            min-height: 110px;
+        }
+
+        button,
+        .cancelar {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        button {
+            background: #ffcb05;
+            color: #202938;
+        }
+
+        button:hover {
+            background: #ffe066;
+        }
+
+        .cancelar {
+            margin-left: 8px;
+            background: #303949;
+            color: #f2f4f8;
+        }
+
+        .cancelar:hover {
+            background: #414d61;
+        }
+
+        .errorlist {
+            color: #ff8a80;
+        }
+
+        .ayuda {
+            color: #9aa8ba;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+            form {
+                padding: 20px;
+            }
+
+            button,
+            .cancelar {
+                width: 100%;
+                margin: 8px 0 0;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <title>{{ titulo }}</title>
+            <h1>{{ titulo }}</h1>
+
+            <button type="submit">Guardar</button>
+            <a class="cancelar" href="{% url 'pokemon:lista' %}">Cancelar</a>
+        </form>
+    </main>
+</body>
+</html>
