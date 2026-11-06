@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quiz Pokémon TCG</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 32px 16px;
+            background: #f2f5f9;
+            color: #202938;
+            font-family: Arial, sans-serif;
+        }
+        main {
+            width: min(720px, 100%);
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 { color: #d62828; }
+        .panel {
+            margin-top: 24px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 14px #00000018;
+        }
+        #carta {
+            display: block;
+            width: min(245px, 80%);
+            margin: 16px auto;
+            transition: filter 0.3s ease;
+        }
+        #carta.oculta { filter: blur(10px); }
+        #opciones {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        button, .volver {
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 8px;
+            background: #d62828;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        button:hover, .volver:hover { background: #a91f1f; }
+        button:disabled { cursor: default; opacity: 0.65; }
+        #resultado { min-height: 1.5em; font-weight: bold; }
+        #error { color: #a91f1f; }
+        @media (max-width: 480px) {
+            #opciones { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>¿Quién es este Pokémon?</h1>
+        <p>Adivina el Pokémon usando una carta del catálogo TCGdex.</p>
+
+        <section class="panel">
+            <p id="estado" role="status" aria-live="polite">Cargando pregunta…</p>
+            <img id="carta" class="oculta" alt="Carta Pokémon oculta">
+            <div id="opciones"></div>
+            <p id="resultado" aria-live="polite"></p>
+            <p id="puntuacion">Puntos: 0</p>
+            <p id="error"></p>
+            <button id="nueva-pregunta" type="button" hidden>Otra pregunta</button>
+        </section>
+
+        <p><a class="volver" href="{% url 'pokemon:lista' %}">Volver a la Pokédex</a></p>
+    </main>
+
+    <script>
+    (() => {
+        const urlPregunta = "{% url 'pokemon:api_pregunta_quiz' %}";
+        const imagen = document.getElementById("carta");
+        const opciones = document.getElementById("opciones");
+        const estado = document.getElementById("estado");
+        const resultado = document.getElementById("resultado");
+        const puntuacion = document.getElementById("puntuacion");
+        const error = document.getElementById("error");
+        const nuevaPregunta = document.getElementById("nueva-pregunta");
+        let respuestaCorrecta = "";
+        let puntos = 0;
+
+        async function cargarPregunta() {
+            estado.textContent = "Cargando pregunta…";
+            error.textContent = "";
+            resultado.textContent = "";
+            opciones.replaceChildren();
+            imagen.removeAttribute("src");
+            imagen.classList.add("oculta");
+            nuevaPregunta.hidden = true;
+
+            try {
+                const respuesta = await fetch(urlPregunta, {
+                    headers: { "Accept": "application/json" }
+                });
+                const pregunta = await respuesta.json();
+                if (!respuesta.ok) throw new Error(pregunta.error || "No se pudo cargar el quiz.");
+
+                imagen.src = pregunta.imagen;
+                respuestaCorrecta = pregunta.respuesta;
+                estado.textContent = "Elige una respuesta:";
+
+                for (const nombre of pregunta.opciones) {
+                    const boton = document.createElement("button");
+                    boton.type = "button";
+                    boton.textContent = nombre;
+                    boton.addEventListener("click", () => responder(nombre));
+                    opciones.append(boton);
+                }
+            } catch (excepcion) {
+                estado.textContent = "";
+                error.textContent = excepcion.message;
+                nuevaPregunta.hidden = false;
+            }
+        }
+
+        function responder(nombre) {
+            for (const boton of opciones.querySelectorAll("button")) boton.disabled = true;
+            imagen.classList.remove("oculta");
+
+            if (nombre === respuestaCorrecta) {
+                resultado.textContent = "¡Correcto! Es " + respuestaCorrecta + ".";
+                puntos += 1;
+                puntuacion.textContent = "Puntos: " + puntos;
+            } else {
+                resultado.textContent = "Era " + respuestaCorrecta + ". ¡Intenta otra!";
+            }
+            nuevaPregunta.hidden = false;
+        }
+
+        nuevaPregunta.addEventListener("click", cargarPregunta);
+        cargarPregunta();
+    })();
+    </script>
+</body>
+</html>

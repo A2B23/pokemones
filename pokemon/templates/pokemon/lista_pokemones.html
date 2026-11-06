@@ -71,6 +71,52 @@
     background: #a91f1f;
     transform: translateY(-2px);
 }
+
+.busqueda-api {
+    max-width: 650px;
+    margin: 24px auto;
+    text-align: center;
+}
+
+.busqueda-api input {
+    width: min(360px, 65%);
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.busqueda-api button {
+    padding: 11px 16px;
+    border: 0;
+    border-radius: 8px;
+    background: #d62828;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.resultado-api {
+    max-width: 500px;
+    margin: 24px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px #00000018;
+}
+
+.resultado-api img {
+    display: block;
+    width: 220px;
+    height: 180px;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.error-api {
+    color: #a91f1f;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -79,7 +125,39 @@
     <a href="{% url 'pokemon:crear' %}">Agregar Pokémon</a>
     <a href="{% url 'pokemon:entrenadores' %}">Ver entrenadores</a>
     <a href="{% url 'pokemon:gimnasios' %}">Ver gimnasios</a>
+    <a href="{% url 'pokemon:quiz' %}">Jugar quiz Pokémon</a>
 </nav>
+
+<form class="busqueda-api" method="get" action="{% url 'pokemon:lista' %}">
+    <label for="buscar">Buscar cualquier Pokémon en PokéAPI:</label><br><br>
+    <input
+        id="buscar"
+        type="search"
+        name="buscar"
+        value="{{ busqueda }}"
+        placeholder="Nombre o número, por ejemplo pikachu o 25"
+        required
+    >
+    <button type="submit">Buscar</button>
+</form>
+
+{% if error_api %}
+    <p class="error-api" role="status" style="text-align: center;">{{ error_api }}</p>
+{% endif %}
+
+{% if pokemon_api %}
+    <article class="resultado-api">
+        <p><strong>Resultado en PokéAPI · #{{ pokemon_api.numero }}</strong></p>
+        {% if pokemon_api.imagen %}
+            <img src="{{ pokemon_api.imagen }}" alt="{{ pokemon_api.nombre }}">
+        {% endif %}
+        <h2>{{ pokemon_api.nombre }}</h2>
+        <p><strong>Tipo:</strong> {{ pokemon_api.elementos|join:", " }}</p>
+        <p><strong>Peso:</strong> {{ pokemon_api.peso }} kg</p>
+        <p><strong>Habilidades:</strong> {{ pokemon_api.habilidades|join:", " }}</p>
+        <p>Este resultado viene de PokéAPI y no se ha guardado en tu base de datos.</p>
+    </article>
+{% endif %}
 
     <section class="pokemones">
         {% for pokemon in pokemones %}
@@ -101,4 +179,4 @@
         {% endfor %}
     </section>
 </body>
-</html> 
+</html>
