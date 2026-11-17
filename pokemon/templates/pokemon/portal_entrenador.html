@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Portal del entrenador Pokémon</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 30px 16px; background: #10131a; color: #f2f4f8; font-family: Arial, sans-serif; }
+        main { width: min(1000px, 100%); margin: 0 auto; }
+        header, section { margin-bottom: 20px; padding: 24px; border: 1px solid #303949; border-radius: 16px; background: #1a202b; }
+        header { background: linear-gradient(120deg, #17365d, #2457a6); }
+        h1, h2 { margin-top: 0; }
+        h1, .accent { color: #ffcb05; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        li { margin: 10px 0; }
+        a, button { display: inline-block; padding: 10px 15px; border: 0; border-radius: 8px; background: #ffcb05; color: #202938; font-weight: bold; text-decoration: none; cursor: pointer; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+        @media (max-width: 480px) { body { padding: 18px 12px; } }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <p class="accent">CENTRO POKÉMON</p>
+        <h1>Portal del entrenador</h1>
+        <p>¡Hola, {{ entrenador.nombre }} {{ entrenador.apellido }}!</p>
+        <p>Documento: {{ entrenador.documento }}</p>
+    </header>
+
+    <div class="grid">
+        <section>
+            <h2>Mi equipo Pokémon</h2>
+            {% if pokemones %}
+                <ul>
+                    {% for pokemon in pokemones %}
+                        <li><strong>{{ pokemon.nombre }}</strong> · {{ pokemon.elemento }} · {{ pokemon.peso }} kg</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aún no tienes Pokémon vinculados a tu entrenador.</p>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2>Mis medallas</h2>
+            {% if medallas %}
+                <ul>
+                    {% for gimnasio in medallas %}
+                        <li>Gimnasio de {{ gimnasio.elemento }}{% if gimnasio.medallas %} · {{ gimnasio.medallas }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aún no tienes medallas registradas.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'pokemon:lista' %}">Abrir Pokédex</a>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Cerrar sesión</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

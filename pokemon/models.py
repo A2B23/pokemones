@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Pokemon(models.Model):
@@ -45,3 +46,26 @@ class Entrenador(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
+
+
+class Perfil(models.Model):
+    class Rol(models.TextChoices):
+        ENTRENADOR = "entrenador", "Entrenador"
+        JUGADOR = "jugador", "Jugador"
+
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="perfil_pokemon",
+    )
+    rol = models.CharField(max_length=20, choices=Rol.choices)
+    entrenador = models.OneToOneField(
+        Entrenador,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="perfil_usuario",
+    )
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.get_rol_display()}"

@@ -1,21 +1,82 @@
 import json
 import re
 import random
+from functools import wraps
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 from django.core.cache import cache
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.shortcuts import render
-from .models import Pokemon
+from .models import Pokemon, Perfil, Entrenador
 from .forms import PokemonForm
-from django.shortcuts import render, redirect
 from django.shortcuts import render, redirect, get_object_or_404
 
 
+def administrador_requerido(vista):
+    @login_required(login_url="login")
+    @wraps(vista)
+    def comprobar_usuario(request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return vista(request, *args, **kwargs)
 
+    return comprobar_usuario
+
+
+def usuario_puede_jugar_quiz(usuario):
+    if usuario.is_staff:
+        return False
+    try:
+        return usuario.perfil_pokemon.rol == Perfil.Rol.JUGADOR
+    except Perfil.DoesNotExist:
+        return False
+
+
+def jugador_o_admin_requerido(vista):
+    @login_required(login_url="login")
+    @wraps(vista)
+    def comprobar_usuario(request, *args, **kwargs):
+        if not usuario_puede_jugar_quiz(request.user):
+            raise PermissionDenied("El quiz está disponible únicamente para jugadores.")
+        return vista(request, *args, **kwargs)
+
+    return comprobar_usuario
+
+
+@login_required(login_url="login")
+def inicio_por_rol(request):
+    if request.user.is_staff:
+        return redirect("pokemon:lista")
+
+    try:
+        perfil = request.user.perfil_pokemon
+    except Perfil.DoesNotExist:
+        raise PermissionDenied("Esta cuenta no tiene un perfil asignado.")
+
+    if perfil.rol == Perfil.Rol.ENTRENADOR:
+        if perfil.entrenador_id is None:
+            raise PermissionDenied("El perfil no está vinculado a un entrenador.")
+        entrenador = perfil.entrenador
+        return render(request, "pokemon/portal_entrenador.html", {
+            "entrenador": entrenador,
+            "pokemones": entrenador.pokemones.all(),
+            "medallas": entrenador.medallas.all(),
+        })
+
+    if perfil.rol == Perfil.Rol.JUGADOR:
+        return redirect("pokemon:lista")
+
+    raise PermissionDenied("El rol del perfil no es válido.")
+
+
+
+@login_required(login_url="login")
 def lista_pokemones(request):
     pokemones = Pokemon.objects.all()
     busqueda = request.GET.get("buscar", "").strip().lower()
@@ -85,15 +146,18 @@ def lista_pokemones(request):
             "busqueda": busqueda,
             "pokemon_api": pokemon_api,
             "error_api": error_api,
+            "puede_jugar_quiz": usuario_puede_jugar_quiz(request.user),
         },
     )
 
 
+@jugador_o_admin_requerido
 def quiz_pokemon(request):
     return render(request, "pokemon/quiz_pokemon.html")
 
 
 @require_GET
+@jugador_o_admin_requerido
 def api_pregunta_quiz(request):
     tarjetas = cache.get("tcgdex:en:tarjetas-pokemon")
 
@@ -151,6 +215,7 @@ def api_pregunta_quiz(request):
     })
 
 
+@administrador_requerido
 def crear_pokemon(request):
     if request.method == "POST":
         form = PokemonForm(request.POST)
@@ -163,6 +228,7 @@ def crear_pokemon(request):
     return render(request, "pokemon/crear_pokemon.html", {"form": form})
 
 
+@administrador_requerido
 def editar_pokemon(request, pk):
     pokemon = get_object_or_404(Pokemon, pk=pk)
 
@@ -183,6 +249,7 @@ def editar_pokemon(request, pk):
 
 from django.contrib import messages
 
+@administrador_requerido
 def eliminar_pokemon(request, pk):
     pokemon = get_object_or_404(Pokemon, pk=pk)
 
@@ -201,6 +268,7 @@ def eliminar_pokemon(request, pk):
 from .models import Entrenador
 
 
+@login_required(login_url="login")
 def lista_entrenadores(request):
     entrenadores = Entrenador.objects.prefetch_related("pokemones").all()
     return render(
@@ -213,6 +281,7 @@ def lista_entrenadores(request):
 from .models import Gimnasio
 
 
+@login_required(login_url="login")
 def lista_gimnasios(request):
     gimnasios = Gimnasio.objects.select_related("lider").prefetch_related(
         "entrenadores_ganadores"

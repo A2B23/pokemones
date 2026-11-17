@@ -117,15 +117,44 @@
     color: #a91f1f;
     font-weight: bold;
 }
+
+.sesion {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: right;
+}
+
+.sesion button {
+    padding: 9px 13px;
+    border: 0;
+    border-radius: 8px;
+    background: #202938;
+    color: white;
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
+<div class="sesion">
+    <span>Sesión: {{ user.username }}</span>
+    {% if not user.is_staff %}
+        <a href="{% url 'pokemon:inicio_por_rol' %}">Mi portal</a>
+    {% endif %}
+    <form method="post" action="{% url 'logout' %}" style="display:inline">
+        {% csrf_token %}
+        <button type="submit">Cerrar sesión</button>
+    </form>
+</div>
     <h1>Pokédex</h1>
 <nav class="navegacion">
-    <a href="{% url 'pokemon:crear' %}">Agregar Pokémon</a>
+    {% if user.is_staff %}
+        <a href="{% url 'pokemon:crear' %}">Agregar Pokémon</a>
+    {% endif %}
     <a href="{% url 'pokemon:entrenadores' %}">Ver entrenadores</a>
     <a href="{% url 'pokemon:gimnasios' %}">Ver gimnasios</a>
-    <a href="{% url 'pokemon:quiz' %}">Jugar quiz Pokémon</a>
+    {% if puede_jugar_quiz %}
+        <a href="{% url 'pokemon:quiz' %}">Jugar quiz Pokémon</a>
+    {% endif %}
 </nav>
 
 <form class="busqueda-api" method="get" action="{% url 'pokemon:lista' %}">
@@ -171,8 +200,10 @@
                 <p><strong>Peso:</strong> {{ pokemon.peso }} kg</p>
                 <p><strong>Habilidades:</strong> {{ pokemon.habilidades }}</p>
                 <p>{{ pokemon.descripcion }}</p>
-                <a href="{% url 'pokemon:editar' pokemon.pk %}">Editar</a>
-                <a href="{% url 'pokemon:eliminar' pokemon.pk %}">Eliminar</a>
+                {% if user.is_staff %}
+                    <a href="{% url 'pokemon:editar' pokemon.pk %}">Editar</a>
+                    <a href="{% url 'pokemon:eliminar' pokemon.pk %}">Eliminar</a>
+                {% endif %}
             </article>
         {% empty %}
             <p>Aún no hay Pokémon registrados.</p>

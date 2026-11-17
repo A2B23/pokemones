@@ -4,7 +4,8 @@ from . import views
 app_name = "pokemon"
 
 urlpatterns = [
-    path("", views.lista_pokemones, name="lista"),
+    path("inicio/", views.inicio_por_rol, name="inicio_por_rol"),
+    path("pokedex/", views.lista_pokemones, name="lista"),
     path("pokemon/crear/", views.crear_pokemon, name="crear"),
     path("pokemon/<int:pk>/editar/", views.editar_pokemon, name="editar"),
     path("pokemon/<int:pk>/eliminar/",views.eliminar_pokemon,name="eliminar",),
